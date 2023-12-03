@@ -1,0 +1,102 @@
+import string
+
+with open("day3/data/input1.txt", "r") as f:
+    data = [line.strip() for line in f.readlines()]
+
+row_len = len(data[0])
+rows_in_data = len(data)
+ch_not_symbols = string.digits + "."
+
+engines_positions = {}
+
+valid_numbers = []
+for i, row in enumerate(data):
+    number = ""
+    is_valid_number = False
+    for j, ch in enumerate(row):
+        if ch.isdigit():
+            number += ch
+
+            # if we already checked that the number is valid we don't
+            # need to continue checking. Just finish looking for al the
+            # digits in the number
+            if is_valid_number:
+                if j == (row_len - 1):
+                    valid_numbers.append(int(number))
+                    if engine_pos in engines_positions:
+                        engines_positions[engine_pos] += [int(number)]
+                    else:
+                        engines_positions[engine_pos] = [int(number)]
+                continue
+
+            # check right (first check that there are more character
+            # and then checking those)
+            if j < (row_len - 1):
+                is_valid_number = row[j + 1] == "*"
+                engine_pos = (i, j + 1)
+
+                if is_valid_number:
+                    continue
+
+            if j != 0:
+                is_valid_number = row[j - 1] == "*"
+                engine_pos = (i, j - 1)
+
+                if is_valid_number:
+                    continue
+
+            if j == (row_len - 1):
+                steps = range(-1, 1, 1)
+            elif j == 0:
+                steps = range(0, 2, 1)
+            else:
+                steps = range(-1, 2, 1)
+
+            # up (straight and diagonally)
+            if i != 0:
+                for step in steps:
+                    ch = data[i - 1][j + step]
+                    is_valid_number = ch == "*"
+                    if is_valid_number:
+                        engine_pos = (i - 1, j + step)
+                        break
+
+                if is_valid_number:
+                    continue
+
+            # down (straight and diagonally)
+            if i != (rows_in_data - 1):
+                for step in steps:
+                    ch = data[i + 1][j + step]
+                    is_valid_number = ch == "*"
+                    if is_valid_number:
+                        engine_pos = (i + 1, j + step)
+                        break
+
+                if is_valid_number:
+                    continue
+
+        elif is_valid_number:
+            valid_numbers.append(int(number))
+            if engine_pos in engines_positions:
+                engines_positions[engine_pos] += [int(number)]
+            else:
+                engines_positions[engine_pos] = [int(number)]
+            number = ""
+            is_valid_number = False
+
+        else:
+            number = ""
+
+# print(sum(valid_numbers))
+total_ratio = 0
+for values in engines_positions.values():
+    if len(values) == 2:
+        engine_ratio = 1
+        for num in values:
+            engine_ratio *= num
+        print(engine_ratio)
+        total_ratio += engine_ratio
+
+print(engines_positions)
+print(total_ratio)
