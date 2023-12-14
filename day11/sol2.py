@@ -1,4 +1,5 @@
 from __future__ import annotations
+import pickle as pkl
 
 with open("day11/data/input.txt", "r") as f:
     data = [line.strip() for line in f.readlines()]
@@ -12,41 +13,32 @@ class Galaxy:
 
     def distance_to(self, other: Galaxy) -> int:
         return abs(self.position[0] - other.position[0]) + abs(self.position[1] - other.position[1])
+    
 
-def expand_universe(data: list[str]) -> list[str]:
+def calculate_galaxies(data: list[str], times: int =2) -> list[Galaxy]:
     # columns
+    galaxies = []
+    rows_empt = 0
+    empy_cols_idx = []
     j = 0
     while j < len(data[0]):
         col = [row[j] for row in data]
         if "#" not in col:
-            i = 0
-            while i < len(col):
-                data[i].insert(j, col[i])
-                i += 1
-            j += 2
-        else:
-            j += 1
+            empy_cols_idx.append(j)
+        j += 1
 
-    # rows
-    i = 0
-    while i < len(data):
-        if "#" not in data[i]:
-            data.insert(i, data[i])
-            i += 2
-        else:
-            i += 1
-    
-    return data
+    for i,row in enumerate(data):
+        if "#" not in row:
+            rows_empt += 1
+        
+        for j, cell in enumerate(row):
+            pos_y = sum([val < j for val in empy_cols_idx])
+            if cell == "#":
+                galaxies.append(Galaxy((i+rows_empt*(times-1), j+pos_y*(times-1))))
+                
+    return galaxies
 
-
-
-data = expand_universe(data)
-
-galaxies= []
-for i, row in enumerate(data):
-    for j, cell in enumerate(row):
-        if cell == "#":
-            galaxies.append(Galaxy((i, j)))
+galaxies = calculate_galaxies(data, times=1000000)
 
 # find distance of each galaxy with each other only once
 distances = {}
